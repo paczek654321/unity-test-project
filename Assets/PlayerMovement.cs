@@ -35,7 +35,6 @@ public class PlayerMovement : MonoBehaviour
 		_body.linearVelocity += Vector3.up * velocityY;
 
 		//Handle jumping
-		Debug.Log(_body.linearVelocity);
 		if (Input.GetAxis("Jump") != 0 && Physics.SphereCast(new Ray(transform.position, Vector3.down), _shape.radius-0.1f, _shape.height/2))
 		{
 			_body.AddForce(Vector3.up*jumpHeight, ForceMode.Impulse);
