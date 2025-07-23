@@ -14,17 +14,21 @@ public class PlayerMovement : MonoBehaviour
 	
 	private CapsuleCollider _shape;
 
+	private Animator _animation;
+
 	void Start()
 	{
 		_body = GetComponent<Rigidbody>();
-		_camera = transform.Find("Camera");
+		_camera = transform.GetChild(0);
 
 		_shape = GetComponent<CapsuleCollider>();
+
+		_animation = transform.GetChild(1).GetComponent<Animator>();
 
 		Cursor.lockState = CursorLockMode.Locked;
 	}
 
-    void FixedUpdate()
+    void FixedUpdate()	
     {
 		//Move on the XZ plane
 		float velocityY = _body.linearVelocity.y;
@@ -33,6 +37,8 @@ public class PlayerMovement : MonoBehaviour
 			Input.GetAxis("Horizontal") * transform.right.normalized;
 		_body.linearVelocity = _body.linearVelocity.normalized * speed;
 		_body.linearVelocity += Vector3.up * velocityY;
+		//Manage walking/idle animations
+		_animation.SetBool("Walking", _body.linearVelocity.x != 0 || _body.linearVelocity.z != 0);
 
 		//Handle jumping
 		if (Input.GetAxis("Jump") != 0 && Physics.SphereCast(new Ray(transform.position, Vector3.down), _shape.radius-0.1f, _shape.height/2))
