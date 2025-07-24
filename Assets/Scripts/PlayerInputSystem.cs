@@ -13,8 +13,6 @@ public partial class PlayerInputSystem : SystemBase
 
 	protected override void OnCreate()
 	{
-		UnityEngine.Cursor.lockState = UnityEngine.CursorLockMode.Locked;
-
 		_input = new Controls();
 		_input.Enable();
 	}
