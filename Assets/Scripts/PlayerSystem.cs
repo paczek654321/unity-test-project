@@ -17,6 +17,7 @@ public partial struct PlayerSystem : ISystem
 	public void OnUpdate(ref SystemState state)
 	{
 		PlayerJob job = new PlayerJob{physicsWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>()};
+		//Using PhysicsWorldSingelton forces synchronous execution
 		job.Schedule();
 	}
 }
@@ -28,7 +29,7 @@ public partial struct PlayerJob : IJobEntity
 	private bool GroundCheck(float3 position, float radius, float halfHeight)
 	{
 		NativeList<ColliderCastHit> collisons = new NativeList<ColliderCastHit>(Allocator.Temp);
-		physicsWorld.SphereCastAll(position, radius, new float3(0, -1, 0), halfHeight, ref collisons, CollisionFilter.Default);
+		physicsWorld.SphereCastAll(position, radius, new float3(0, -1, 0), halfHeight-radius, ref collisons, CollisionFilter.Default);
 		return collisons.Length > 1;
 	}
 
@@ -51,7 +52,7 @@ public partial struct PlayerJob : IJobEntity
 		//Hardocded radius and height, Unity disables unsafe access by default | alternative: float radius; unsafe { radius = ((SphereCollider*)collider.ColliderPtr)->Radius - 0.1f; }
 		if (data.input.jump && GroundCheck(transform.Position, 0.4f, 1))
 		{
-			velocity.Linear.y += data.jumpHeight;
+			velocity.Linear.y = data.jumpHeight;
 		}
 	}
 }
