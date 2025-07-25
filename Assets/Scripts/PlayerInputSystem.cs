@@ -28,7 +28,7 @@ public partial class PlayerInputSystem : SystemBase
 
 		playerInput.move = _input.Player.Move.ReadValue<UnityEngine.Vector2>();
 		playerInput.jump = _input.Player.Jump.ReadValue<float>() > 0;
-		
+		//TODO: Extract this into a seperate player input component
 		foreach(RefRW<PlayerData> data in SystemAPI.Query<RefRW<PlayerData>>())
 		{
 			data.ValueRW.input = playerInput;
