@@ -7,20 +7,23 @@ public struct TestRpcCommand : IRpcCommand{ public FixedString64Bytes message; }
 public struct GoInGameRpcCommand : IRpcCommand{}
 
 [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-public partial class ServerSystem : SystemBase
+public partial struct ServerInitSystem : ISystem
 {
-	protected override void OnCreate() { Debug.Log("--- Starting a Server ---"); }
+	[Unity.Burst.BurstCompile]
+	public void OnCreate(ref SystemState state) { Debug.Log("--- Starting a Server ---"); }
 
-	protected override void OnUpdate()
+	[Unity.Burst.BurstCompile]
+	public void OnUpdate(ref SystemState state)
 	{
 		EntityCommandBuffer buffer = new EntityCommandBuffer(Allocator.Temp);
 		foreach (RefRW<Unity.Physics.PhysicsVelocity> velocity in SystemAPI.Query<RefRW<Unity.Physics.PhysicsVelocity>>())
 		{
-			velocity.ValueRW.Linear.y = 1;
+			velocity.ValueRW.Linear.z = 1;
+			velocity.ValueRW.Linear.y = 0;
 		}
 		foreach (var (request, command, entity) in SystemAPI.Query<ReceiveRpcCommandRequest, TestRpcCommand>().WithEntityAccess())
 		{
-			Debug.Log(request.SourceConnection.Index + ": " + command.message);
+			Debug.Log(command.message);
 			buffer.DestroyEntity(entity);
 		}
 		foreach (var (request, command, entity) in SystemAPI.Query<ReceiveRpcCommandRequest, GoInGameRpcCommand>().WithEntityAccess())
@@ -28,13 +31,13 @@ public partial class ServerSystem : SystemBase
 			buffer.AddComponent<NetworkStreamInGame>(request.SourceConnection);
 			buffer.DestroyEntity(entity);
 		}
-		buffer.Playback(EntityManager);
+		buffer.Playback(state.EntityManager);
 		buffer.Dispose();
 	}
-}
+}	
 	
 [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
-public partial class ClientSystem : SystemBase
+public partial struct ClientInitSystem : ISystem
 {
 	private void SendRpc<T>(EntityCommandBuffer buffer, T command) where T : unmanaged, IComponentData
 	{
@@ -43,9 +46,11 @@ public partial class ClientSystem : SystemBase
 		buffer.AddComponent(entity, command);	
 	}
 
-	protected override void OnCreate() { Debug.Log("--- Starting a Client ---"); }
+	[Unity.Burst.BurstCompile]
+	public void OnCreate(ref SystemState state) { Debug.Log("--- Starting a Client ---"); }
 	
-	protected override void OnUpdate()
+	[Unity.Burst.BurstCompile]
+	public void OnUpdate(ref SystemState state)
 	{
 		EntityCommandBuffer buffer = new EntityCommandBuffer(Allocator.Temp);
 		foreach((NetworkId networkId, Entity entity) in SystemAPI.Query<NetworkId>().WithNone<NetworkStreamInGame>().WithEntityAccess())
@@ -57,7 +62,7 @@ public partial class ClientSystem : SystemBase
 		{
 			SendRpc(buffer, new TestRpcCommand{message = "test"});
 		}
-		buffer.Playback(EntityManager);
+		buffer.Playback(state.EntityManager);
 		buffer.Dispose();
 	}
 }
