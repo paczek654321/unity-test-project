@@ -9,7 +9,7 @@ public struct PlayerData : IComponentData
 	//Stored here because the client predicted one wont synchronize with other clients
 	[Unity.NetCode.GhostField]public Vector2 movement;
 	public const float speed = 3;
-	public const float jumpHeight = 0.5f;
+	public const float jumpHeight = 5;
 }
 
 public class PlayerBaker : Baker<PlayerAuthoring>
