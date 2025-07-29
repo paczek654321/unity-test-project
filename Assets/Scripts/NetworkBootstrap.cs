@@ -7,7 +7,6 @@ public class AutoConnectBootstrap: ClientServerBootstrap
    {
 		AutoConnectPort = 7979;
     	base.Initialize(defaultWorldName);
-    	ServerWorld?.EntityManager.CreateSingleton(new ClientServerTickRate{ SimulationTickRate = 30 });
 		return true;
    }
 }
