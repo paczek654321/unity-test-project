@@ -40,7 +40,7 @@ public partial struct ServerInitSystem : ISystem
 			buffer.AddComponent<NetworkStreamInGame>(request.SourceConnection);
 
 			Entity player = buffer.Instantiate(prefabManager.player);
-			buffer.SetComponent(player, Unity.Transforms.LocalTransform.FromPosition(new float3(numPlayers*2, 0, 0)));
+			buffer.SetComponent(player, Unity.Transforms.LocalTransform.FromPosition(new float3((numPlayers == 1) ? -2 : 2, 1, 0)));
 			buffer.SetComponent(player, new PlayerData{ id = numPlayers - 1 });
 			buffer.AddComponent(player, new GhostOwner{ NetworkId = SystemAPI.GetComponent<NetworkId>(request.SourceConnection).Value });
 
