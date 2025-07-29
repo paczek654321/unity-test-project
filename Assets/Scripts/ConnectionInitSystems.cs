@@ -73,7 +73,7 @@ public partial struct ClientInitSystem : ISystem
 			buffer.AddComponent<NetworkStreamInGame>(entity);
 			SendRpc(buffer, new GoInGameRpcCommand());
 		}
-		if (Input.GetKeyDown(KeyCode.Space))
+		if (Input.GetKeyDown(KeyCode.T))
 		{
 			SendRpc(buffer, new TestRpcCommand{message = "test"});
 		}
