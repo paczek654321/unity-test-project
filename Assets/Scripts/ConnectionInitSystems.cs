@@ -4,8 +4,6 @@ using Unity.Collections;
 using Unity.Mathematics;	
 using UnityEngine;
 
-using Unity.Physics;
-
 public struct TestRpcCommand : IRpcCommand{ public FixedString64Bytes message; }
 public struct GoInGameRpcCommand : IRpcCommand{}
 
@@ -37,20 +35,27 @@ public partial struct ServerInitSystem : ISystem
 		{
 			numPlayers += 1;
 
-			buffer.AddComponent<NetworkStreamInGame>(request.SourceConnection);
+			if (numPlayers > 2)
+			{
+				buffer.AddComponent<NetworkStreamRequestDisconnect>(request.SourceConnection);
+			}
+			else
+			{
+				buffer.AddComponent<NetworkStreamInGame>(request.SourceConnection);
 
-			Entity player = buffer.Instantiate(prefabManager.player);
-			buffer.SetComponent(player, Unity.Transforms.LocalTransform.FromPosition(new float3((numPlayers == 1) ? -2 : 2, 1, 0)));
-			buffer.SetComponent(player, new PlayerData{ id = numPlayers - 1 });
-			buffer.AddComponent(player, new GhostOwner{ NetworkId = SystemAPI.GetComponent<NetworkId>(request.SourceConnection).Value });
+				Entity player = buffer.Instantiate(prefabManager.player);
+				buffer.SetComponent(player, Unity.Transforms.LocalTransform.FromPosition(new float3((numPlayers == 1) ? -2 : 2, 1, 0)));
+				buffer.SetComponent(player, new PlayerData{ id = numPlayers - 1 });
+				buffer.AddComponent(player, new GhostOwner{ NetworkId = SystemAPI.GetComponent<NetworkId>(request.SourceConnection).Value });
 
-			buffer.DestroyEntity(entity);
+				buffer.DestroyEntity(entity);
+			}
 		}
 		buffer.Playback(state.EntityManager);
 		buffer.Dispose();
 	}
 }	
-	
+
 [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
 public partial struct ClientInitSystem : ISystem
 {
@@ -67,6 +72,7 @@ public partial struct ClientInitSystem : ISystem
 	[Unity.Burst.BurstCompile]
 	public void OnUpdate(ref SystemState state)
 	{
+		if (!SystemAPI.HasSingleton<NetworkStreamConnection>()) { Application.Quit(); }
 		EntityCommandBuffer buffer = new EntityCommandBuffer(Allocator.Temp);
 		foreach((NetworkId networkId, Entity entity) in SystemAPI.Query<NetworkId>().WithNone<NetworkStreamInGame>().WithEntityAccess())
 		{
