@@ -54,7 +54,7 @@ public partial struct PlayerMovementSystem : ISystem
 		return result;
 	}
 
-	//[Unity.Burst.BurstCompile]
+	[Unity.Burst.BurstCompile]
 	public void OnUpdate(ref SystemState state)
 	{
 		foreach
