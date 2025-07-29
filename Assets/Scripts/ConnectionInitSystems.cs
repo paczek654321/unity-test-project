@@ -1,7 +1,10 @@
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Collections;
+using Unity.Mathematics;	
 using UnityEngine;
+
+using Unity.Physics;
 
 public struct TestRpcCommand : IRpcCommand{ public FixedString64Bytes message; }
 public struct GoInGameRpcCommand : IRpcCommand{}
@@ -10,25 +13,37 @@ public struct GoInGameRpcCommand : IRpcCommand{}
 public partial struct ServerInitSystem : ISystem
 {
 	[Unity.Burst.BurstCompile]
-	public void OnCreate(ref SystemState state) { Debug.Log("--- Starting a Server ---"); }
+	public void OnCreate(ref SystemState state)
+	{
+		Debug.Log("--- Starting a Server ---");
+		state.RequireForUpdate<PrefabManager>();
+	}
 
 	[Unity.Burst.BurstCompile]
 	public void OnUpdate(ref SystemState state)
 	{
+		PrefabManager prefabManager = SystemAPI.GetSingleton<PrefabManager>();
 		EntityCommandBuffer buffer = new EntityCommandBuffer(Allocator.Temp);
-		foreach (RefRW<Unity.Physics.PhysicsVelocity> velocity in SystemAPI.Query<RefRW<Unity.Physics.PhysicsVelocity>>())
-		{
-			velocity.ValueRW.Linear.z = 1;
-			velocity.ValueRW.Linear.y = 0;
-		}
 		foreach (var (request, command, entity) in SystemAPI.Query<ReceiveRpcCommandRequest, TestRpcCommand>().WithEntityAccess())
 		{
 			Debug.Log(command.message);
 			buffer.DestroyEntity(entity);
 		}
+
+		int numPlayers = 0;
+		foreach (NetworkStreamConnection connection in SystemAPI.Query<NetworkStreamConnection>().WithAll<NetworkStreamInGame>()) { numPlayers += 1; }
+
 		foreach (var (request, command, entity) in SystemAPI.Query<ReceiveRpcCommandRequest, GoInGameRpcCommand>().WithEntityAccess())
 		{
+			numPlayers += 1;
+
 			buffer.AddComponent<NetworkStreamInGame>(request.SourceConnection);
+
+			Entity player = buffer.Instantiate(prefabManager.player);
+			buffer.SetComponent(player, Unity.Transforms.LocalTransform.FromPosition(new float3(numPlayers*2, 0, 0)));
+			buffer.SetComponent(player, new PlayerData{ id = numPlayers - 1 });
+			buffer.AddComponent(player, new GhostOwner{ NetworkId = SystemAPI.GetComponent<NetworkId>(request.SourceConnection).Value });
+
 			buffer.DestroyEntity(entity);
 		}
 		buffer.Playback(state.EntityManager);
