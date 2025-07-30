@@ -40,8 +40,13 @@ public class SynchronizeModel : MonoBehaviour
 
 	void Start()
 	{
+		if (!AutoConnectBootstrap.HasClientWorlds)
+		{
+			Destroy(gameObject);
+			return;
+		}
 		_entityManager = AutoConnectBootstrap.ClientWorld.EntityManager;
-		_animator = GetComponent<Animator>();		
+		_animator = GetComponent<Animator>();
 	}
 
     void FixedUpdate()
