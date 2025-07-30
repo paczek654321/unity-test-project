@@ -20,8 +20,6 @@ public class CoinBaker : Baker<CoinAuthoring>
 [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
 public partial struct CoinSystem : ISystem
 {
-	public static readonly CollisionFilter s_collisonFilter = new CollisionFilter{BelongsTo = ~0u, CollidesWith = PlayerData.collisionMask};
-
 	[Unity.Burst.BurstCompile]
 	public void OnCreate(ref SystemState state)
 	{
@@ -39,7 +37,7 @@ public partial struct CoinSystem : ISystem
 		transform.ValueRW = transform.ValueRO.RotateZ(math.TORADIANS*90*SystemAPI.Time.DeltaTime);
 
 		NativeList<DistanceHit> collisions = new NativeList<DistanceHit>(Allocator.Temp);
-		SystemAPI.GetSingleton<PhysicsWorldSingleton>().OverlapSphere(transform.ValueRO.Position, 0.5f, ref collisions, s_collisonFilter);
+		SystemAPI.GetSingleton<PhysicsWorldSingleton>().OverlapSphere(transform.ValueRO.Position, 0.5f, ref collisions, PlayerData.s_collisonFilter);
 
 		if (collisions.IsEmpty) { return; }
 
