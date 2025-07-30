@@ -45,10 +45,16 @@ public partial class PlayerInputSystem : SystemBase
 public partial struct PlayerMovementSystem : ISystem
 {
 	//A little bit smaller than the actuall radius in order to avoid counting side collisions
-	private bool GroundCheck(float3 position, float radius = 0.2f, float halfHeight = 1)
+	//Gettining the data dynamically is far too complicated
+	private bool GroundCheck(float3 position)
 	{
 		NativeList<ColliderCastHit> collisons = new NativeList<ColliderCastHit>(Allocator.Temp);
-		SystemAPI.GetSingleton<PhysicsWorldSingleton>().SphereCastAll(position, radius, new float3(0, -1, 0), halfHeight-radius, ref collisons, CollisionFilter.Default);
+		SystemAPI.GetSingleton<PhysicsWorldSingleton>().SphereCastAll
+		(
+			position, PlayerData.groundCheckRadius,
+			new float3(0, -1, 0), PlayerData.halfHeight-PlayerData.groundCheckRadius,
+			ref collisons, CollisionFilter.Default
+		);
 		bool result = collisons.Length > 1;
 		collisons.Dispose();
 		return result;

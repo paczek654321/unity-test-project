@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 8728972644699787363}
   - component: {fileID: -1928365578830129108}
   - component: {fileID: -5095226941569109417}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -46,11 +46,11 @@ CapsuleCollider:
   m_Material: {fileID: 13400000, guid: 4f8efea8b9da847d6851ed283f73c1df, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 9
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_LayerOverridePriority: 0
+  m_LayerOverridePriority: 1
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1

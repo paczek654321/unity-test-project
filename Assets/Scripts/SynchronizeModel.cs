@@ -27,6 +27,7 @@ public class SynchronizeModel : MonoBehaviour
 			if (data.id == playerId)
 			{
 				_player = entity;
+				//0.644 is the inverse of the speed the animation was created for
 				GetComponent<Animator>().speed = 0.644f*PlayerData.speed;
 				_local = _entityManager.IsComponentEnabled<Unity.NetCode.GhostOwnerIsLocal>(_player);
 			}
