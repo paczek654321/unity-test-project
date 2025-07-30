@@ -54,7 +54,7 @@ public partial struct ServerInitSystem : ISystem
 		buffer.Playback(state.EntityManager);
 		buffer.Dispose();
 	}
-}	
+}
 
 [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
 public partial struct ClientInitSystem : ISystem

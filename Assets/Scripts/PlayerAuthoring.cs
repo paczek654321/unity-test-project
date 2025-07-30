@@ -10,6 +10,9 @@ public struct PlayerData : IComponentData
 	[Unity.NetCode.GhostField]public Vector2 movement;
 	public const float speed = 3;
 	public const float jumpHeight = 5;
+	public const float halfHeight = 1;
+	public const float groundCheckRadius = 0.2f;
+	public const uint collisionMask = 1u<<3;
 }
 
 public class PlayerBaker : Baker<PlayerAuthoring>
