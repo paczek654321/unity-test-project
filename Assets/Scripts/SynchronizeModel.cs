@@ -28,7 +28,7 @@ public class SynchronizeModel : MonoBehaviour
 			{
 				_player = entity;
 				//0.644 is the inverse of the speed the animation was created for
-				GetComponent<Animator>().speed = 0.644f*PlayerData.speed;
+				GetComponent<Animator>().speed = 0.644f*PlayerData.Speed;
 				_local = _entityManager.IsComponentEnabled<Unity.NetCode.GhostOwnerIsLocal>(_player);
 			}
 		}
@@ -40,16 +40,17 @@ public class SynchronizeModel : MonoBehaviour
 
 	void Start()
 	{
-		_entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+		_entityManager = AutoConnectBootstrap.ClientWorld.EntityManager;
 		_animator = GetComponent<Animator>();		
 	}
 
     void FixedUpdate()
 	{
 		if (!FindPlayer()) { return; }
+		PlayerData playerData = _entityManager.GetComponentData<PlayerData>(_player);
 		//Prefer predicted inputs if possible
 		Vector2 movement = _local ? _entityManager.GetComponentData<PlayerInput>(_player).movementXZ :
-			_entityManager.GetComponentData<PlayerData>(_player).movement;
+			playerData.movement;
 
 		LocalTransform entityTransform = _entityManager.GetComponentData<LocalTransform>(_player);
 		transform.position = (Vector3)entityTransform.Position + position;
@@ -58,6 +59,12 @@ public class SynchronizeModel : MonoBehaviour
 		{
 			transform.rotation = quaternion.Euler(0, math.atan2(movement.x, movement.y), 0);
 			transform.Rotate(rotation);
+		}
+		if (playerData.kick)
+		{
+			playerData.kick = false;
+			_entityManager.SetComponentData(_player, playerData);
+			_animator.SetTrigger("Kick");
 		}
 		_animator.SetBool("Walking", walking);
 	}
